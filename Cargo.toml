@@ -3,6 +3,19 @@ name = "server-coin"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+chia-bls = "0.4.0"
+chia-client = "0.4.0"
+chia-protocol = "0.4.0"
+chia-wallet = "0.4.0"
+chia-wallet-sdk = "0.4.0"
+clvm-traits = { version = "0.3.3", features = ["derive"] }
+clvm-utils = "0.4.0"
+clvmr = "0.4.0"
+hex = "0.4.3"
+hex-literal = "0.4.1"
+num-bigint = "0.4.4"
+tokio = { version = "1.35.1", features = ["full"] }
+
+[patch.crates-io]
+chia-wallet-sdk = { path = "../wallet-sdk" }
