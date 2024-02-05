@@ -193,14 +193,14 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "chia-bls"
-version = "0.3.3"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba003303bda3019f2fe94e5478555a96addff1d6a1ea84bfe207b3f075cd8420"
+checksum = "1cbbce0107fa3911890f1a204a147c6d07116687658a6af95690e64fc21ff782"
 dependencies = [
  "anyhow",
  "arbitrary",
  "blst",
- "chia-traits",
+ "chia-traits 0.3.3",
  "hex",
  "hkdf",
  "sha2 0.10.8",
@@ -210,14 +210,14 @@ dependencies = [
 
 [[package]]
 name = "chia-bls"
-version = "0.4.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1cbbce0107fa3911890f1a204a147c6d07116687658a6af95690e64fc21ff782"
+checksum = "1eecb2aae758d6109f7a79da85343f7b513740af237d8e55f8bb0687f27a170c"
 dependencies = [
  "anyhow",
  "arbitrary",
  "blst",
- "chia-traits",
+ "chia-traits 0.5.1",
  "hex",
  "hkdf",
  "sha2 0.10.8",
@@ -227,12 +227,12 @@ dependencies = [
 
 [[package]]
 name = "chia-client"
-version = "0.4.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb41345e4a65143e25586c81406ae03d3a4587bd744829cd76e21cc379871c78"
+checksum = "d5ffc39ab1aa7e333539afe68739eca59c47160a5a3db85b886571b0b3438ad8"
 dependencies = [
  "chia-protocol",
- "chia-traits",
+ "chia-traits 0.5.1",
  "futures-util",
  "thiserror",
  "tokio",
@@ -242,13 +242,13 @@ dependencies = [
 
 [[package]]
 name = "chia-protocol"
-version = "0.4.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a03f3ad0134d3ab3229e9af77e101d0f58027163c3ec6e46dbddc40f27cf106a"
+checksum = "10a4f5e87514749bdc03b2a7915e34d8105980f161a29689de321b0dd7c7a835"
 dependencies = [
  "arbitrary",
- "chia-bls 0.4.0",
- "chia-traits",
+ "chia-bls 0.5.1",
+ "chia-traits 0.5.1",
  "chia_streamable_macro",
  "clvm-traits",
  "clvm-utils",
@@ -285,13 +285,25 @@ dependencies = [
 ]
 
 [[package]]
-name = "chia-wallet"
-version = "0.4.0"
+name = "chia-traits"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89706bf760b82c1698363536ad76aef8aae28363e4e76f928f652ee98ffac254"
+checksum = "630c8f3ee351d7a70abd2b6edaae248e5e7e874c24c9251608a9f2e410073de7"
+dependencies = [
+ "chia_streamable_macro",
+ "hex",
+ "sha2 0.10.8",
+ "thiserror",
+]
+
+[[package]]
+name = "chia-wallet"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a04c957c8341103b8afb5986d10b4e9f645e0428aa6c6e554efe46f1601d59c4"
 dependencies = [
  "arbitrary",
- "chia-bls 0.4.0",
+ "chia-bls 0.5.1",
  "chia-protocol",
  "clvm-traits",
  "clvm-utils",
@@ -306,7 +318,7 @@ name = "chia-wallet-sdk"
 version = "0.4.0"
 dependencies = [
  "bech32",
- "chia-bls 0.4.0",
+ "chia-bls 0.5.1",
  "chia-client",
  "chia-protocol",
  "chia-ssl",
@@ -351,21 +363,22 @@ dependencies = [
 
 [[package]]
 name = "clvm-traits"
-version = "0.3.3"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5548b7de9921c68b2ca1101c08dd416bfa9afdf319f5b45183ecb3574ee177a3"
+checksum = "23fdd5089c9e32a4a563da945309c41577181087f5017a3104b031a4e58591e7"
 dependencies = [
- "chia-bls 0.4.0",
+ "chia-bls 0.5.1",
  "clvm-derive",
+ "clvmr",
  "num-bigint",
  "thiserror",
 ]
 
 [[package]]
 name = "clvm-utils"
-version = "0.4.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "02a3c5564ca2f937b0d44f7c17606f4ec059ba6754b4d03a1bc08bf4b39bab08"
+checksum = "ec7ee2a18ad62e51e2c0078fe9c2078fde3c5f0da18d9fd2de5f73dfb1b98f68"
 dependencies = [
  "clvm-traits",
  "clvmr",
@@ -373,12 +386,11 @@ dependencies = [
 
 [[package]]
 name = "clvmr"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "797ae1b4229262bd4987523a8f75e49d4800338db5feb2b39612edbfa8934186"
+checksum = "9703ae71967bce4aa064bcdcb4103b065b2e40ae710729f42697e94bff43553f"
 dependencies = [
- "chia-bls 0.3.3",
- "clvm-traits",
+ "chia-bls 0.4.0",
  "k256",
  "lazy_static",
  "num-bigint",
@@ -874,9 +886,9 @@ checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
 name = "miniz_oxide"
-version = "0.7.1"
+version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7810e0be55b428ada41041c41f32c9f1a42817901b4ccf45fa3d4b6561e74c7"
+checksum = "9d811f3e15f28568be3407c8e7fdb6514c1cda3cb30683f15b6a1a1dc4ea14a7"
 dependencies = [
  "adler",
 ]
@@ -1479,7 +1491,7 @@ dependencies = [
 name = "server-coin"
 version = "0.1.0"
 dependencies = [
- "chia-bls 0.4.0",
+ "chia-bls 0.5.1",
  "chia-client",
  "chia-protocol",
  "chia-wallet",
@@ -1490,6 +1502,8 @@ dependencies = [
  "hex",
  "hex-literal",
  "num-bigint",
+ "rand",
+ "thiserror",
  "tokio",
 ]
 
@@ -1678,9 +1692,9 @@ dependencies = [
 
 [[package]]
 name = "time"
-version = "0.3.32"
+version = "0.3.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe80ced77cbfb4cb91a94bf72b378b4b6791a0d9b7f09d0be747d1bdff4e68bd"
+checksum = "c8248b6521bb14bc45b4067159b9b6ad792e2d6d754d6c41fb50e29fefe38749"
 dependencies = [
  "deranged",
  "itoa",
@@ -1743,9 +1757,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.35.1"
+version = "1.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c89b4efa943be685f629b149f53829423f8f5531ea21249408e8e2f8671ec104"
+checksum = "61285f6515fa018fb2d1e46eb21223fff441ee8db5d0f1435e8ab4f5cdb80931"
 dependencies = [
  "backtrace",
  "bytes",
@@ -2132,9 +2146,9 @@ checksum = "dff9641d1cd4be8d1a070daf9e3773c5f67e78b4d9d42263020c057706765c04"
 
 [[package]]
 name = "winnow"
-version = "0.5.36"
+version = "0.5.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "818ce546a11a9986bc24f93d0cdf38a8a1a400f1473ea8c82e59f6e0ffab9249"
+checksum = "a7cad8365489051ae9f054164e459304af2e7e9bb407c958076c8bf4aef52da5"
 dependencies = [
  "memchr",
 ]
