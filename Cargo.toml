@@ -1,9 +1,16 @@
 [package]
 name = "server-coin"
-version = "0.1.0"
+version = "0.0.0"
 edition = "2021"
 
+[lib]
+crate-type = ["cdylib"]
+
 [dependencies]
+# Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
+napi = { version = "2.12.2", default-features = false, features = ["napi4", "async"] }
+napi-derive = "2.12.2"
+
 chia-bls = "0.5.1"
 chia-client = "0.5.1"
 chia-protocol = "0.5.1"
@@ -18,3 +25,12 @@ num-bigint = "0.4.4"
 rand = "0.8.5"
 thiserror = "1.0.56"
 tokio = { version = "1.35.1", features = ["full"] }
+native-tls = "0.2.11"
+bip39 = "2.0.0"
+
+[build-dependencies]
+napi-build = "2.0.1"
+
+[profile.release]
+lto = true
+strip = "symbols"

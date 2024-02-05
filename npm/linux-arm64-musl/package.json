@@ -1,0 +1,21 @@
+{
+  "name": "server-coin-linux-arm64-musl",
+  "version": "0.0.0",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "main": "server-coin.linux-arm64-musl.node",
+  "files": [
+    "server-coin.linux-arm64-musl.node"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 10"
+  },
+  "libc": [
+    "musl"
+  ]
+}
