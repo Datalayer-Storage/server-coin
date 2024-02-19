@@ -4,11 +4,11 @@ use std::{str::FromStr, sync::Arc};
 
 use bip39::Mnemonic;
 use chia_bls::{SecretKey, Signature};
-use chia_client::Peer;
-use chia_protocol::{Coin, NodeType, SpendBundle};
+use chia_client::Peer as RustPeer;
+use chia_protocol::{Coin as RustCoin, NodeType, SpendBundle};
 use chia_wallet_sdk::{
     connect_peer, create_tls_connector, incremental_sync, load_ssl_cert, sign_spend_bundle,
-    MemoryCoinStore, SimpleDerivationStore, SyncConfig,
+    MemoryCoinStore, PublicKeyStore, SimpleDerivationStore, SyncConfig,
 };
 use clvmr::Allocator;
 use napi::{bindgen_prelude::Uint8Array, Error, Result};
@@ -16,17 +16,19 @@ use native_tls::TlsConnector;
 
 mod server_coin;
 
-use server_coin::*;
+use server_coin::{
+    create_server_coin, delete_server_coins, fetch_server_coins, ServerCoin as RustServerCoin,
+};
 use tokio::sync::mpsc;
 
 #[macro_use]
 extern crate napi_derive;
 
-#[napi(js_name = "Tls")]
-pub struct JsTls(TlsConnector);
+#[napi]
+pub struct Tls(TlsConnector);
 
 #[napi]
-impl JsTls {
+impl Tls {
     #[napi(constructor)]
     pub fn new(cert_path: String, key_path: String) -> Self {
         let cert = load_ssl_cert(&cert_path, &key_path);
@@ -35,13 +37,13 @@ impl JsTls {
     }
 }
 
-#[napi(js_name = "Peer")]
-pub struct JsPeer(Arc<Peer>);
+#[napi]
+pub struct Peer(Arc<RustPeer>);
 
 #[napi]
-impl JsPeer {
+impl Peer {
     #[napi(factory)]
-    pub async fn connect(node_uri: String, network_id: String, tls: &JsTls) -> Result<Self> {
+    pub async fn connect(node_uri: String, network_id: String, tls: &Tls) -> Result<Self> {
         let peer = connect_peer(&node_uri, tls.0.clone()).await.map_err(js)?;
 
         peer.send_handshake(network_id, NodeType::Wallet)
@@ -56,7 +58,7 @@ impl JsPeer {
         &self,
         launcher_id: Uint8Array,
         count: u32,
-    ) -> Result<Vec<JsServerCoin>> {
+    ) -> Result<Vec<ServerCoin>> {
         let launcher_id = bytes32(launcher_id)?;
 
         let server_coins = fetch_server_coins(&self.0, launcher_id, count as usize)
@@ -69,7 +71,7 @@ impl JsPeer {
 
 #[napi]
 pub struct Wallet {
-    peer: Arc<Peer>,
+    peer: Arc<RustPeer>,
     derivation_store: Arc<SimpleDerivationStore>,
     coin_store: Arc<MemoryCoinStore>,
     agg_sig_me: [u8; 32],
@@ -79,7 +81,7 @@ pub struct Wallet {
 impl Wallet {
     #[napi(factory)]
     pub async fn initial_sync(
-        peer: &JsPeer,
+        peer: &Peer,
         mnemonic: String,
         agg_sig_me: Uint8Array,
     ) -> Result<Self> {
@@ -124,6 +126,11 @@ impl Wallet {
     }
 
     #[napi]
+    pub async fn derivation_index(&self) -> u32 {
+        self.derivation_store.count().await
+    }
+
+    #[napi]
     pub async fn create_server_coin(
         &self,
         launcher_id: Uint8Array,
@@ -163,7 +170,7 @@ impl Wallet {
     }
 
     #[napi]
-    pub async fn delete_server_coins(&self, coins: Vec<JsCoin>, fee: f64) -> Result<bool> {
+    pub async fn delete_server_coins(&self, coins: Vec<Coin>, fee: f64) -> Result<bool> {
         let coin_spends = delete_server_coins(
             &self.peer,
             self.derivation_store.as_ref(),
@@ -171,7 +178,7 @@ impl Wallet {
             coins
                 .into_iter()
                 .map(TryInto::try_into)
-                .collect::<Result<Vec<Coin>>>()?,
+                .collect::<Result<Vec<RustCoin>>>()?,
             fee as u64,
         )
         .await
@@ -195,15 +202,15 @@ impl Wallet {
     }
 }
 
-#[napi(object, js_name = "ServerCoin")]
-pub struct JsServerCoin {
-    pub coin: JsCoin,
+#[napi(object)]
+pub struct ServerCoin {
+    pub coin: Coin,
     pub p2_puzzle_hash: Uint8Array,
     pub memo_urls: Vec<String>,
 }
 
-impl From<ServerCoin> for JsServerCoin {
-    fn from(value: ServerCoin) -> Self {
+impl From<RustServerCoin> for ServerCoin {
+    fn from(value: RustServerCoin) -> Self {
         Self {
             coin: value.coin.into(),
             p2_puzzle_hash: value.p2_puzzle_hash.to_bytes().into(),
@@ -212,15 +219,15 @@ impl From<ServerCoin> for JsServerCoin {
     }
 }
 
-#[napi(object, js_name = "Coin")]
-pub struct JsCoin {
+#[napi(object)]
+pub struct Coin {
     pub parent_coin_info: Uint8Array,
     pub puzzle_hash: Uint8Array,
     pub amount: f64,
 }
 
-impl From<Coin> for JsCoin {
-    fn from(value: Coin) -> Self {
+impl From<RustCoin> for Coin {
+    fn from(value: RustCoin) -> Self {
         Self {
             parent_coin_info: value.parent_coin_info.to_bytes().into(),
             puzzle_hash: value.puzzle_hash.to_bytes().into(),
@@ -229,10 +236,10 @@ impl From<Coin> for JsCoin {
     }
 }
 
-impl TryFrom<JsCoin> for Coin {
+impl TryFrom<Coin> for RustCoin {
     type Error = Error;
 
-    fn try_from(value: JsCoin) -> Result<Self> {
+    fn try_from(value: Coin) -> Result<Self> {
         Ok(Self {
             parent_coin_info: bytes32(value.parent_coin_info)?.into(),
             puzzle_hash: bytes32(value.puzzle_hash)?.into(),
