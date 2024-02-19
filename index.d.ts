@@ -25,6 +25,7 @@ export class Peer {
 export class Wallet {
   static initialSync(peer: Peer, mnemonic: string, aggSigMe: Uint8Array): Promise<Wallet>
   derivationIndex(): Promise<number>
+  hasPuzzleHash(puzzleHash: Uint8Array): Promise<boolean>
   createServerCoin(launcherId: Uint8Array, amount: number, fee: number, urls: Array<string>): Promise<boolean>
   deleteServerCoins(coins: Array<Coin>, fee: number): Promise<boolean>
 }

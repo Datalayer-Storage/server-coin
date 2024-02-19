@@ -8,7 +8,7 @@ use chia_client::Peer as RustPeer;
 use chia_protocol::{Coin as RustCoin, NodeType, SpendBundle};
 use chia_wallet_sdk::{
     connect_peer, create_tls_connector, incremental_sync, load_ssl_cert, sign_spend_bundle,
-    MemoryCoinStore, PublicKeyStore, SimpleDerivationStore, SyncConfig,
+    DerivationStore, MemoryCoinStore, PublicKeyStore, SimpleDerivationStore, SyncConfig,
 };
 use clvmr::Allocator;
 use napi::{bindgen_prelude::Uint8Array, Error, Result};
@@ -128,6 +128,16 @@ impl Wallet {
     #[napi]
     pub async fn derivation_index(&self) -> u32 {
         self.derivation_store.count().await
+    }
+
+    #[napi]
+    pub async fn has_puzzle_hash(&self, puzzle_hash: Uint8Array) -> Result<bool> {
+        let puzzle_hash = bytes32(puzzle_hash)?;
+        Ok(self
+            .derivation_store
+            .index_of_ph(puzzle_hash)
+            .await
+            .is_some())
     }
 
     #[napi]
