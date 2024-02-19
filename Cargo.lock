@@ -1657,7 +1657,6 @@ dependencies = [
  "napi-derive",
  "native-tls",
  "num-bigint",
- "rand",
  "thiserror",
  "tokio",
 ]

@@ -6,11 +6,10 @@ use chia_wallet_sdk::{
     Condition, CreateCoin, DerivationStore, SyncConfig,
 };
 use clvm_traits::{FromClvm, FromNodePtr, ToClvm, ToNodePtr};
-use clvm_utils::{curry_tree_hash, tree_hash, tree_hash_atom, CurriedProgram};
-use clvmr::{cost::Cost, serde::node_from_bytes, Allocator, NodePtr};
+use clvm_utils::{curry_tree_hash, tree_hash_atom, CurriedProgram};
+use clvmr::{serde::node_from_bytes, Allocator, NodePtr};
 use hex_literal::hex;
 use num_bigint::BigInt;
-use rand::{seq::SliceRandom, thread_rng};
 use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq, ToClvm, FromClvm)]
@@ -103,57 +102,6 @@ pub struct ServerCoin {
     pub coin: Coin,
     pub p2_puzzle_hash: Bytes32,
     pub memo_urls: Vec<String>,
-}
-
-pub async fn fetch_server_coins(
-    peer: &Peer,
-    launcher_id: [u8; 32],
-    coin_limit: usize,
-) -> Result<Vec<ServerCoin>, chia_client::Error<()>> {
-    let hint = morph_launcher_id(launcher_id);
-    let mut response = peer.register_for_ph_updates(vec![hint.into()], 0).await?;
-    response.retain(|state| state.spent_height.is_none());
-
-    response.shuffle(&mut thread_rng());
-
-    let mut results = Vec::new();
-
-    for coin_state in response.into_iter().take(coin_limit) {
-        let Some(created_height) = coin_state.created_height else {
-            continue;
-        };
-
-        let Ok(spend) = peer
-            .request_puzzle_and_solution(coin_state.coin.parent_coin_info, created_height)
-            .await
-        else {
-            continue;
-        };
-
-        let mut a = Allocator::new();
-
-        let Ok(output) = spend.puzzle.run(&mut a, 0, Cost::MAX, &spend.solution) else {
-            continue;
-        };
-
-        let Ok(conditions) = Vec::<Condition<NodePtr>>::from_clvm(&a, output.1) else {
-            continue;
-        };
-
-        let Some(urls) = urls_from_conditions(&coin_state.coin, &conditions) else {
-            continue;
-        };
-
-        let puzzle = spend.puzzle.to_node_ptr(&mut a).unwrap();
-
-        results.push(ServerCoin {
-            coin: coin_state.coin,
-            p2_puzzle_hash: tree_hash(&a, puzzle).into(),
-            memo_urls: urls,
-        });
-    }
-
-    Ok(results)
 }
 
 #[derive(Debug, Error)]

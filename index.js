@@ -295,10 +295,11 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { Tls, Peer, Wallet, toCoinId, bytesEqual } = nativeBinding
+const { Tls, Peer, ServerCoinIterator, Wallet, toCoinId, bytesEqual } = nativeBinding
 
 module.exports.Tls = Tls
 module.exports.Peer = Peer
+module.exports.ServerCoinIterator = ServerCoinIterator
 module.exports.Wallet = Wallet
 module.exports.toCoinId = toCoinId
 module.exports.bytesEqual = bytesEqual

@@ -20,7 +20,10 @@ export class Tls {
 }
 export class Peer {
   static connect(nodeUri: string, networkId: string, tls: Tls): Promise<Peer>
-  fetchServerCoins(launcherId: Uint8Array, count: number): Promise<Array<ServerCoin>>
+  fetchServerCoins(launcherId: Uint8Array): Promise<ServerCoinIterator>
+}
+export class ServerCoinIterator {
+  next(): Promise<ServerCoin | null>
 }
 export class Wallet {
   static initialSync(peer: Peer, mnemonic: string, aggSigMe: Uint8Array): Promise<Wallet>

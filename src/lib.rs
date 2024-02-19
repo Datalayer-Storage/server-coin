@@ -5,21 +5,24 @@ use std::{str::FromStr, sync::Arc};
 use bip39::Mnemonic;
 use chia_bls::{SecretKey, Signature};
 use chia_client::Peer as RustPeer;
-use chia_protocol::{Coin as RustCoin, NodeType, SpendBundle};
+use chia_protocol::{Coin as RustCoin, CoinState, NodeType, SpendBundle};
 use chia_wallet_sdk::{
     connect_peer, create_tls_connector, incremental_sync, load_ssl_cert, sign_spend_bundle,
-    DerivationStore, MemoryCoinStore, PublicKeyStore, SimpleDerivationStore, SyncConfig,
+    Condition, DerivationStore, MemoryCoinStore, PublicKeyStore, SimpleDerivationStore, SyncConfig,
 };
-use clvmr::Allocator;
+use clvm_traits::{FromClvm, ToNodePtr};
+use clvm_utils::tree_hash;
+use clvmr::{cost::Cost, Allocator, NodePtr};
 use napi::{bindgen_prelude::Uint8Array, Error, Result};
 use native_tls::TlsConnector;
 
 mod server_coin;
 
 use server_coin::{
-    create_server_coin, delete_server_coins, fetch_server_coins, ServerCoin as RustServerCoin,
+    create_server_coin, delete_server_coins, morph_launcher_id, urls_from_conditions,
+    ServerCoin as RustServerCoin,
 };
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, Mutex};
 
 #[macro_use]
 extern crate napi_derive;
@@ -54,18 +57,75 @@ impl Peer {
     }
 
     #[napi]
-    pub async fn fetch_server_coins(
-        &self,
-        launcher_id: Uint8Array,
-        count: u32,
-    ) -> Result<Vec<ServerCoin>> {
+    pub async fn fetch_server_coins(&self, launcher_id: Uint8Array) -> Result<ServerCoinIterator> {
         let launcher_id = bytes32(launcher_id)?;
 
-        let server_coins = fetch_server_coins(&self.0, launcher_id, count as usize)
+        let hint = morph_launcher_id(launcher_id);
+        let mut response = self
+            .0
+            .register_for_ph_updates(vec![hint.into()], 0)
             .await
             .map_err(|_| Error::from_reason("could not fetch server coins"))?;
+        response.retain(|coin_state| coin_state.spent_height.is_none());
+        response.sort_by_key(|coin_state| coin_state.coin.amount);
 
-        Ok(server_coins.into_iter().map(Into::into).collect())
+        Ok(ServerCoinIterator {
+            peer: self.0.clone(),
+            coin_states: Arc::new(Mutex::new(response)),
+        })
+    }
+}
+
+#[napi]
+pub struct ServerCoinIterator {
+    peer: Arc<RustPeer>,
+    coin_states: Arc<Mutex<Vec<CoinState>>>,
+}
+
+#[napi]
+impl ServerCoinIterator {
+    #[napi]
+    pub async fn next(&self) -> Result<Option<ServerCoin>> {
+        loop {
+            let Some(coin_state) = self.coin_states.lock().await.pop() else {
+                return Ok(None);
+            };
+
+            let Some(created_height) = coin_state.created_height else {
+                continue;
+            };
+
+            let spend = self
+                .peer
+                .request_puzzle_and_solution(coin_state.coin.parent_coin_info, created_height)
+                .await
+                .map_err(|_| Error::from_reason("failed to fetch puzzle and solution"))?;
+
+            let mut a = Allocator::new();
+
+            let Ok(output) = spend.puzzle.run(&mut a, 0, Cost::MAX, &spend.solution) else {
+                continue;
+            };
+
+            let Ok(conditions) = Vec::<Condition<NodePtr>>::from_clvm(&a, output.1) else {
+                continue;
+            };
+
+            let Some(urls) = urls_from_conditions(&coin_state.coin, &conditions) else {
+                continue;
+            };
+
+            let puzzle = spend.puzzle.to_node_ptr(&mut a).unwrap();
+
+            return Ok(Some(
+                RustServerCoin {
+                    coin: coin_state.coin,
+                    p2_puzzle_hash: tree_hash(&a, puzzle).into(),
+                    memo_urls: urls,
+                }
+                .into(),
+            ));
+        }
     }
 }
 
