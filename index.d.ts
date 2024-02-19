@@ -13,6 +13,8 @@ export interface Coin {
   puzzleHash: Uint8Array
   amount: number
 }
+export function toCoinId(coin: Coin): Uint8Array
+export function bytesEqual(a: Uint8Array, b: Uint8Array): boolean
 export class Tls {
   constructor(certPath: string, keyPath: string)
 }

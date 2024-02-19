@@ -226,6 +226,16 @@ pub struct Coin {
     pub amount: f64,
 }
 
+#[napi]
+pub fn to_coin_id(coin: Coin) -> Result<Uint8Array> {
+    Ok(RustCoin::try_from(coin)?.coin_id().into())
+}
+
+#[napi]
+pub fn bytes_equal(a: Uint8Array, b: Uint8Array) -> bool {
+    a.to_vec() == b.to_vec()
+}
+
 impl From<RustCoin> for Coin {
     fn from(value: RustCoin) -> Self {
         Self {
