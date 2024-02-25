@@ -43,8 +43,16 @@ openssl-sys = { version = "0.9.99", features = ["vendored"] }
 openssl = { version = "0.10.63", features = ["vendored"] }
 openssl-sys = { version = "0.9.99", features = ["vendored"] }
 
+[target.armv7-unknown-linux-gnueabihf.dependencies]
+openssl = { version = "0.10.63", features = ["vendored"] }
+openssl-sys = { version = "0.9.99", features = ["vendored"] }
+
 [build-dependencies]
 napi-build = "2.0.1"
+
+[patch.crates-io.blst]
+git = "https://github.com/supranational/blst.git"
+rev = "0d46eefa45fc1e57aceb42bba0e84eab3a7a9725"
 
 [profile.release]
 lto = true
