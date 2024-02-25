@@ -52,7 +52,7 @@ napi-build = "2.0.1"
 
 [patch.crates-io]
 blst = { git = "https://github.com/supranational/blst.git", rev = "0d46eefa45fc1e57aceb42bba0e84eab3a7a9725" }
-cc = { git = "https://github.com/rust-lang/cc-rs.git" rev = "561543c5f0f3f4efed4e97844f89c8b424e19d3e" }
+cc = { git = "https://github.com/rust-lang/cc-rs.git", rev = "561543c5f0f3f4efed4e97844f89c8b424e19d3e" }
 
 [profile.release]
 lto = true
