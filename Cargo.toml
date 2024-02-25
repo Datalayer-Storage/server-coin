@@ -27,9 +27,9 @@ tokio = { version = "1.35.1", features = ["full"] }
 native-tls = "0.2.11"
 bip39 = "2.0.0"
 
-# Fix build in CI with OpenSSL
-#openssl = { version = "0.10.63", features = ["vendored"] }
-#openssl-sys = { version = "0.9.99", features = ["vendored"] }
+[target.aarch64-unknown-linux-musl.dependencies]
+openssl = { version = "0.10.63", features = ["vendored"] }
+openssl-sys = { version = "0.9.99", features = ["vendored"] }
 
 [build-dependencies]
 napi-build = "2.0.1"
