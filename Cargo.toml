@@ -1,5 +1,5 @@
 [package]
-name = "server-coin"
+name = "chia-server-coin"
 version = "0.0.0"
 edition = "2021"
 
