@@ -279,6 +279,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "chia-server-coin"
+version = "0.0.0"
+dependencies = [
+ "bip39",
+ "chia-bls 0.5.1",
+ "chia-client",
+ "chia-protocol",
+ "chia-wallet",
+ "chia-wallet-sdk",
+ "clvm-traits",
+ "clvm-utils",
+ "clvmr",
+ "hex",
+ "hex-literal",
+ "napi",
+ "napi-build",
+ "napi-derive",
+ "native-tls",
+ "num-bigint",
+ "openssl",
+ "openssl-sys",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
 name = "chia-ssl"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1640,32 +1666,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.50",
-]
-
-[[package]]
-name = "server-coin"
-version = "0.0.0"
-dependencies = [
- "bip39",
- "chia-bls 0.5.1",
- "chia-client",
- "chia-protocol",
- "chia-wallet",
- "chia-wallet-sdk",
- "clvm-traits",
- "clvm-utils",
- "clvmr",
- "hex",
- "hex-literal",
- "napi",
- "napi-build",
- "napi-derive",
- "native-tls",
- "num-bigint",
- "openssl",
- "openssl-sys",
- "thiserror",
- "tokio",
 ]
 
 [[package]]
