@@ -43,6 +43,10 @@ openssl-sys = { version = "0.9.99", features = ["vendored"] }
 openssl = { version = "0.10.63", features = ["vendored"] }
 openssl-sys = { version = "0.9.99", features = ["vendored"] }
 
+[target.armv7-unknown-linux-gnueabihf.dependencies]
+openssl = { version = "0.10.63", features = ["vendored"] }
+openssl-sys = { version = "0.9.99", features = ["vendored"] }
+
 [build-dependencies]
 napi-build = "2.0.1"
 
