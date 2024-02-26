@@ -3,7 +3,6 @@ env:
   DEBUG: napi:*
   APP_NAME: server-coin
   MACOSX_DEPLOYMENT_TARGET: "10.13"
-  PKG_CONFIG_SYSROOT_DIR: /
 permissions:
   contents: write
   id-token: write
