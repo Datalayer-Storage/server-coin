@@ -73,7 +73,8 @@ jobs:
               sudo apt-get update
               sudo apt-get install gcc-arm-linux-gnueabihf -y
             build: |
-              yarn build --target armv7-unknown-linux-gnueabihf
+              sudo apt-get install pkg-config libssl-dev -y
+              sudo yarn build --target armv7-unknown-linux-gnueabihf
               arm-linux-gnueabihf-strip *.node
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
