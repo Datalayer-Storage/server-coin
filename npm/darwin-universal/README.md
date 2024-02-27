@@ -1,3 +1,3 @@
-# `server-coin-darwin-universal`
+# `chia-server-coin-darwin-universal`
 
-This is the **universal-apple-darwin** binary for `server-coin`
+This is the **universal-apple-darwin** binary for `chia-server-coin`

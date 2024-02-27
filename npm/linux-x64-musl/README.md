@@ -1,3 +1,3 @@
-# `server-coin-linux-x64-musl`
+# `chia-server-coin-linux-x64-musl`
 
-This is the **x86_64-unknown-linux-musl** binary for `server-coin`
+This is the **x86_64-unknown-linux-musl** binary for `chia-server-coin`

@@ -1,3 +1,3 @@
-# `server-coin-win32-x64-msvc`
+# `chia-server-coin-win32-x64-msvc`
 
-This is the **x86_64-pc-windows-msvc** binary for `server-coin`
+This is the **x86_64-pc-windows-msvc** binary for `chia-server-coin`

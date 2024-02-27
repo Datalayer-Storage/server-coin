@@ -1,3 +1,3 @@
-# `server-coin-darwin-x64`
+# `chia-server-coin-darwin-x64`
 
-This is the **x86_64-apple-darwin** binary for `server-coin`
+This is the **x86_64-apple-darwin** binary for `chia-server-coin`
