@@ -1,6 +1,10 @@
 {
   "name": "server-coin-linux-arm64-musl",
-  "version": "0.0.0",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Datalayer-Storage/server-coin"
+  },
   "os": [
     "linux"
   ],
