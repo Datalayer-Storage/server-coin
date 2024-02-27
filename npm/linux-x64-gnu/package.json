@@ -1,5 +1,5 @@
 {
-  "name": "server-coin-linux-x64-gnu",
+  "name": "chia-server-coin-linux-x64-gnu",
   "version": "0.0.2",
   "repository": {
     "type": "git",
