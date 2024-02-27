@@ -8,9 +8,9 @@
   "os": [
     "darwin"
   ],
-  "main": "server-coin.darwin-universal.node",
+  "main": "chia-server-coin.darwin-universal.node",
   "files": [
-    "server-coin.darwin-universal.node"
+    "chia-server-coin.darwin-universal.node"
   ],
   "license": "MIT",
   "engines": {

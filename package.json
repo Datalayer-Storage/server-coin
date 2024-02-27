@@ -8,7 +8,7 @@
     "url": "https://github.com/Datalayer-Storage/server-coin"
   },
   "napi": {
-    "name": "server-coin",
+    "name": "chia-server-coin",
     "triples": {
       "additional": [
         "aarch64-apple-darwin",

@@ -11,9 +11,9 @@
   "cpu": [
     "x64"
   ],
-  "main": "server-coin.linux-x64-musl.node",
+  "main": "chia-server-coin.linux-x64-musl.node",
   "files": [
-    "server-coin.linux-x64-musl.node"
+    "chia-server-coin.linux-x64-musl.node"
   ],
   "license": "MIT",
   "engines": {

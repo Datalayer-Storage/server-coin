@@ -11,9 +11,9 @@
   "cpu": [
     "x64"
   ],
-  "main": "server-coin.darwin-x64.node",
+  "main": "chia-server-coin.darwin-x64.node",
   "files": [
-    "server-coin.darwin-x64.node"
+    "chia-server-coin.darwin-x64.node"
   ],
   "license": "MIT",
   "engines": {

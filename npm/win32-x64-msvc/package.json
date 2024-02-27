@@ -11,9 +11,9 @@
   "cpu": [
     "x64"
   ],
-  "main": "server-coin.win32-x64-msvc.node",
+  "main": "chia-server-coin.win32-x64-msvc.node",
   "files": [
-    "server-coin.win32-x64-msvc.node"
+    "chia-server-coin.win32-x64-msvc.node"
   ],
   "license": "MIT",
   "engines": {
