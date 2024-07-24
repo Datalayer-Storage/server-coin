@@ -8,47 +8,43 @@ crate-type = ["cdylib"]
 
 [dependencies]
 # Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
-napi = { version = "2.12.2", default-features = false, features = ["napi4", "async"] }
-napi-derive = "2.12.2"
+napi = { version = "2.16.8", default-features = false, features = ["napi4", "async"] }
+napi-derive = "2.16.10"
 
-chia-bls = "0.5.1"
-chia-client = "0.5.1"
-chia-protocol = "0.5.1"
-chia-wallet = "0.5.1"
-chia-wallet-sdk = "0.5.0"
-clvm-traits = { version = "0.5.1", features = ["derive"] }
-clvm-utils = "0.5.1"
-clvmr = "0.5.0"
+chia-bls = "0.9.0"
+chia-client = "0.9.0"
+chia-protocol = "0.9.0"
+chia-puzzles = "0.9.0"
+chia-wallet-sdk = "0.11.0"
+clvm-traits = { version = "0.9.0", features = ["derive"] }
+clvm-utils = "0.9.0"
+clvmr = "0.8.0"
 hex = "0.4.3"
 hex-literal = "0.4.1"
-num-bigint = "0.4.4"
-thiserror = "1.0.56"
-tokio = { version = "1.35.1", features = ["full"] }
-native-tls = "0.2.11"
+num-bigint = "0.4.6"
+thiserror = "1.0.63"
+tokio = { version = "1.39.1", features = ["full"] }
+native-tls = "0.2.12"
 bip39 = "2.0.0"
 
 [target.aarch64-unknown-linux-gnu.dependencies]
-openssl = { version = "0.10.63", features = ["vendored"] }
-openssl-sys = { version = "0.9.99", features = ["vendored"] }
+openssl = { version = "0.10.66", features = ["vendored"] }
+openssl-sys = { version = "0.9.103", features = ["vendored"] }
 
 [target.aarch64-unknown-linux-musl.dependencies]
-openssl = { version = "0.10.63", features = ["vendored"] }
-openssl-sys = { version = "0.9.99", features = ["vendored"] }
+openssl = { version = "0.10.66", features = ["vendored"] }
+openssl-sys = { version = "0.9.103", features = ["vendored"] }
 
 [target.x86_64-unknown-linux-gnu.dependencies]
-openssl = { version = "0.10.63", features = ["vendored"] }
-openssl-sys = { version = "0.9.99", features = ["vendored"] }
+openssl = { version = "0.10.66", features = ["vendored"] }
+openssl-sys = { version = "0.9.103", features = ["vendored"] }
 
 [target.x86_64-unknown-linux-musl.dependencies]
-openssl = { version = "0.10.63", features = ["vendored"] }
-openssl-sys = { version = "0.9.99", features = ["vendored"] }
+openssl = { version = "0.10.66", features = ["vendored"] }
+openssl-sys = { version = "0.9.103", features = ["vendored"] }
 
 [build-dependencies]
-napi-build = "2.0.1"
-
-[patch.crates-io]
-blst = { git = "https://github.com/supranational/blst.git", rev = "0d46eefa45fc1e57aceb42bba0e84eab3a7a9725" }
-cc = { git = "https://github.com/rust-lang/cc-rs.git", rev = "561543c5f0f3f4efed4e97844f89c8b424e19d3e" }
+napi-build = "2.1.3"
 
 [profile.release]
 lto = true
