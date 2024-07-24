@@ -40,6 +40,7 @@ impl Tls {
 
 #[napi(object)]
 pub struct StoreInfo {
+    pub latest_coin_id: Uint8Array,
     pub full_puzzle_hash: Uint8Array,
     pub inner_puzzle_hash: Uint8Array,
     pub root_hash: Uint8Array,
@@ -147,6 +148,7 @@ impl Peer {
             }
 
             return Ok(StoreInfo {
+                latest_coin_id: current_coin_id.to_bytes().into(),
                 full_puzzle_hash: output.puzzle_hash.to_bytes().into(),
                 inner_puzzle_hash: <[u8; 32]>::try_from(output.memos[2].to_vec())
                     .map_err(|_| Error::from_reason("Not 32 bytes."))?
