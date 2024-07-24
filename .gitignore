@@ -196,3 +196,5 @@ Cargo.lock
 !.yarn/versions
 
 *.node
+
+test.js

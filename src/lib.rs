@@ -6,7 +6,10 @@ use bip39::Mnemonic;
 use chia_bls::{derive_keys::master_to_wallet_unhardened_intermediate, SecretKey};
 use chia_client::PeerEvent;
 use chia_protocol::{Bytes32, CoinState, NodeType};
-use chia_wallet_sdk::{conditions::Condition, connect_peer, create_tls_connector, load_ssl_cert};
+use chia_wallet_sdk::{
+    conditions::{run_puzzle, Condition},
+    connect_peer, create_tls_connector, load_ssl_cert,
+};
 use clvm_traits::{FromClvm, ToNodePtr};
 use clvm_utils::tree_hash;
 use clvmr::{cost::Cost, Allocator};
@@ -33,6 +36,14 @@ impl Tls {
         let tls = create_tls_connector(&cert).map_err(js)?;
         Ok(Self(tls))
     }
+}
+
+#[napi(object)]
+pub struct StoreInfo {
+    pub full_puzzle_hash: Uint8Array,
+    pub inner_puzzle_hash: Uint8Array,
+    pub root_hash: Uint8Array,
+    pub amount: f64,
 }
 
 #[napi]
@@ -69,6 +80,85 @@ impl Peer {
             peer: self.0.clone(),
             coin_states: Arc::new(Mutex::new(response)),
         })
+    }
+
+    #[napi]
+    pub async fn fetch_store_info(&self, coin_id: Uint8Array) -> Result<StoreInfo> {
+        let coin_id = bytes32(coin_id)?;
+
+        let mut current_coin_id = coin_id;
+
+        loop {
+            let children = self.0.request_children(current_coin_id).await.map_err(js)?;
+            if children.is_empty() {
+                break;
+            }
+
+            let Some(child) = children
+                .into_iter()
+                .find(|child| child.coin.amount % 2 == 1)
+            else {
+                return Err(Error::from_reason("Could not find odd child."));
+            };
+
+            current_coin_id = child.coin.coin_id();
+        }
+
+        let mut coin_states = self
+            .0
+            .register_for_coin_updates(vec![current_coin_id], 0)
+            .await
+            .map_err(js)?;
+
+        if coin_states.is_empty() {
+            return Err(Error::from_reason("Could not find coin state."));
+        }
+
+        let coin_state = coin_states.remove(0);
+
+        let Some(created_height) = coin_state.created_height else {
+            return Err(Error::from_reason("Could not find created height."));
+        };
+
+        let spend = self
+            .0
+            .request_puzzle_and_solution(coin_state.coin.parent_coin_info, created_height)
+            .await
+            .map_err(|_| Error::from_reason("failed to fetch puzzle and solution"))?;
+
+        let mut allocator = Allocator::new();
+        let puzzle = spend.puzzle.to_node_ptr(&mut allocator).map_err(js)?;
+        let solution = spend.solution.to_node_ptr(&mut allocator).map_err(js)?;
+
+        let conditions = run_puzzle(&mut allocator, puzzle, solution).map_err(js)?;
+        let conditions: Vec<Condition> = Vec::from_clvm(&allocator, conditions).map_err(js)?;
+
+        for condition in conditions {
+            let Condition::CreateCoin(output) = condition else {
+                continue;
+            };
+
+            if output.amount % 2 == 0 {
+                continue;
+            }
+
+            if output.memos.len() < 3 {
+                return Err(Error::from_reason("Could not find 3 memos."));
+            }
+
+            return Ok(StoreInfo {
+                full_puzzle_hash: output.puzzle_hash.to_bytes().into(),
+                inner_puzzle_hash: <[u8; 32]>::try_from(output.memos[2].to_vec())
+                    .map_err(|_| Error::from_reason("Not 32 bytes."))?
+                    .into(),
+                root_hash: <[u8; 32]>::try_from(output.memos[1].to_vec())
+                    .map_err(|_| Error::from_reason("Not 32 bytes."))?
+                    .into(),
+                amount: output.amount as f64,
+            });
+        }
+
+        Err(Error::from_reason("Could not find odd child."))
     }
 }
 
