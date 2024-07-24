@@ -13,8 +13,8 @@ export interface Coin {
   puzzleHash: Uint8Array
   amount: number
 }
-export function toCoinId(coin: Coin): Uint8Array
-export function bytesEqual(a: Uint8Array, b: Uint8Array): boolean
+export declare function toCoinId(coin: Coin): Uint8Array
+export declare function bytesEqual(a: Uint8Array, b: Uint8Array): boolean
 export class Tls {
   constructor(certPath: string, keyPath: string)
 }
@@ -29,6 +29,6 @@ export class Wallet {
   static initialSync(peer: Peer, mnemonic: string, aggSigMe: Uint8Array): Promise<Wallet>
   derivationIndex(): Promise<number>
   hasPuzzleHash(puzzleHash: Uint8Array): Promise<boolean>
-  createServerCoin(launcherId: Uint8Array, amount: number, fee: number, urls: Array<string>): Promise<boolean>
-  deleteServerCoins(coins: Array<Coin>, fee: number): Promise<boolean>
+  createServerCoin(launcherId: Uint8Array, amount: number, fee: number, uris: Array<string>): Promise<void>
+  deleteServerCoins(coins: Array<Coin>, fee: number): Promise<void>
 }

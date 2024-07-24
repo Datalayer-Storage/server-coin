@@ -4,8 +4,8 @@ use std::{str::FromStr, sync::Arc};
 
 use bip39::Mnemonic;
 use chia_bls::{derive_keys::master_to_wallet_unhardened_intermediate, SecretKey};
-use chia_client::{Peer, PeerEvent};
-use chia_protocol::{Bytes32, Coin, CoinState, NodeType};
+use chia_client::PeerEvent;
+use chia_protocol::{Bytes32, CoinState, NodeType};
 use chia_wallet_sdk::{conditions::Condition, connect_peer, create_tls_connector, load_ssl_cert};
 use clvm_traits::{FromClvm, ToNodePtr};
 use clvm_utils::tree_hash;
@@ -16,9 +16,8 @@ use native_tls::TlsConnector;
 mod server_coin;
 mod wallet;
 
-use server_coin::{morph_launcher_id, urls_from_conditions, ServerCoin};
+use server_coin::{morph_launcher_id, urls_from_conditions};
 use tokio::sync::Mutex;
-use wallet::Wallet;
 
 #[macro_use]
 extern crate napi_derive;
@@ -36,11 +35,11 @@ impl Tls {
     }
 }
 
-#[napi(js_name = "Peer")]
-pub struct JsPeer(Arc<Peer>);
+#[napi]
+pub struct Peer(Arc<chia_client::Peer>);
 
 #[napi]
-impl JsPeer {
+impl Peer {
     #[napi(factory)]
     pub async fn connect(node_uri: String, network_id: String, tls: &Tls) -> Result<Self> {
         let peer = connect_peer(&node_uri, tls.0.clone()).await.map_err(js)?;
@@ -75,14 +74,14 @@ impl JsPeer {
 
 #[napi]
 pub struct ServerCoinIterator {
-    peer: Arc<Peer>,
+    peer: Arc<chia_client::Peer>,
     coin_states: Arc<Mutex<Vec<CoinState>>>,
 }
 
 #[napi]
 impl ServerCoinIterator {
     #[napi]
-    pub async fn next(&self) -> Result<Option<JsServerCoin>> {
+    pub async fn next(&self) -> Result<Option<ServerCoin>> {
         loop {
             let Some(coin_state) = self.coin_states.lock().await.pop() else {
                 return Ok(None);
@@ -115,7 +114,7 @@ impl ServerCoinIterator {
             let puzzle = spend.puzzle.to_node_ptr(&mut a).unwrap();
 
             return Ok(Some(
-                ServerCoin {
+                server_coin::ServerCoin {
                     coin: coin_state.coin,
                     p2_puzzle_hash: tree_hash(&a, puzzle).into(),
                     memo_urls: urls,
@@ -126,14 +125,14 @@ impl ServerCoinIterator {
     }
 }
 
-#[napi(js_name = "Wallet")]
-pub struct JsWallet(Arc<Mutex<Wallet>>);
+#[napi]
+pub struct Wallet(Arc<Mutex<wallet::Wallet>>);
 
 #[napi]
-impl JsWallet {
+impl Wallet {
     #[napi(factory)]
     pub async fn initial_sync(
-        peer: &JsPeer,
+        peer: &Peer,
         mnemonic: String,
         agg_sig_me: Uint8Array,
     ) -> Result<Self> {
@@ -145,7 +144,7 @@ impl JsWallet {
         let sk = SecretKey::from_seed(&seed);
         let intermediate_sk = master_to_wallet_unhardened_intermediate(&sk);
 
-        let wallet = Arc::new(Mutex::new(Wallet::new(
+        let wallet = Arc::new(Mutex::new(wallet::Wallet::new(
             peer.clone(),
             agg_sig_me,
             intermediate_sk,
@@ -197,11 +196,11 @@ impl JsWallet {
     }
 
     #[napi]
-    pub async fn delete_server_coins(&self, coins: Vec<JsCoin>, fee: f64) -> Result<()> {
+    pub async fn delete_server_coins(&self, coins: Vec<Coin>, fee: f64) -> Result<()> {
         let coins = coins
             .into_iter()
             .map(TryInto::try_into)
-            .collect::<Result<Vec<Coin>>>()?;
+            .collect::<Result<Vec<_>>>()?;
 
         self.0
             .lock()
@@ -212,15 +211,15 @@ impl JsWallet {
     }
 }
 
-#[napi(object, js_name = "ServerCoin")]
-pub struct JsServerCoin {
-    pub coin: JsCoin,
+#[napi(object)]
+pub struct ServerCoin {
+    pub coin: Coin,
     pub p2_puzzle_hash: Uint8Array,
     pub memo_urls: Vec<String>,
 }
 
-impl From<ServerCoin> for JsServerCoin {
-    fn from(value: ServerCoin) -> Self {
+impl From<server_coin::ServerCoin> for ServerCoin {
+    fn from(value: server_coin::ServerCoin) -> Self {
         Self {
             coin: value.coin.into(),
             p2_puzzle_hash: value.p2_puzzle_hash.to_bytes().into(),
@@ -229,16 +228,16 @@ impl From<ServerCoin> for JsServerCoin {
     }
 }
 
-#[napi(object, js_name = "Coin")]
-pub struct JsCoin {
+#[napi(object)]
+pub struct Coin {
     pub parent_coin_info: Uint8Array,
     pub puzzle_hash: Uint8Array,
     pub amount: f64,
 }
 
 #[napi]
-pub fn to_coin_id(coin: JsCoin) -> Result<Uint8Array> {
-    Ok(Coin::try_from(coin)?.coin_id().into())
+pub fn to_coin_id(coin: Coin) -> Result<Uint8Array> {
+    Ok(chia_protocol::Coin::try_from(coin)?.coin_id().into())
 }
 
 #[napi]
@@ -246,8 +245,8 @@ pub fn bytes_equal(a: Uint8Array, b: Uint8Array) -> bool {
     a.to_vec() == b.to_vec()
 }
 
-impl From<Coin> for JsCoin {
-    fn from(value: Coin) -> Self {
+impl From<chia_protocol::Coin> for Coin {
+    fn from(value: chia_protocol::Coin) -> Self {
         Self {
             parent_coin_info: value.parent_coin_info.to_bytes().into(),
             puzzle_hash: value.puzzle_hash.to_bytes().into(),
@@ -256,10 +255,10 @@ impl From<Coin> for JsCoin {
     }
 }
 
-impl TryFrom<JsCoin> for Coin {
+impl TryFrom<Coin> for chia_protocol::Coin {
     type Error = Error;
 
-    fn try_from(value: JsCoin) -> Result<Self> {
+    fn try_from(value: Coin) -> Result<Self> {
         Ok(Self {
             parent_coin_info: bytes32(value.parent_coin_info)?,
             puzzle_hash: bytes32(value.puzzle_hash)?,
