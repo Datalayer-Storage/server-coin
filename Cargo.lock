@@ -443,7 +443,7 @@ dependencies = [
 
 [[package]]
 name = "chia-server-coin"
-version = "0.0.0"
+version = "0.0.4"
 dependencies = [
  "anyhow",
  "bip39",
