@@ -76,9 +76,9 @@ pub const MIRROR_PUZZLE_HASH: TreeHash = TreeHash::new(hex!(
     "
 ));
 
-pub fn morph_launcher_id(launcher_id: Bytes32) -> Bytes32 {
+pub fn morph_launcher_id(launcher_id: Bytes32, offset: &BigInt) -> Bytes32 {
     let launcher_id_int = BigInt::from_signed_bytes_be(&launcher_id);
-    let morphed_int = launcher_id_int + BigInt::from(1);
+    let morphed_int = launcher_id_int + offset;
 
     let mut bytes = morphed_int.to_signed_bytes_be();
     if bytes.len() > 32 {
@@ -131,7 +131,7 @@ mod tests {
         expected[31] = 0;
         expected[30] = 4;
 
-        let actual = morph_launcher_id(id.into());
+        let actual = morph_launcher_id(id.into(), &1.into());
 
         assert_eq!(hex::encode(actual), hex::encode(expected));
     }

@@ -28,6 +28,7 @@ export class Tls {
 export class Peer {
   static connect(nodeUri: string, networkId: string, tls: Tls): Promise<Peer>
   fetchServerCoins(launcherId: Uint8Array): Promise<ServerCoinIterator>
+  fetchServerCoinsWithOffet(launcherId: Uint8Array, offset: number): Promise<ServerCoinIterator>
   fetchStoreInfo(coinId: Uint8Array): Promise<StoreInfo>
 }
 export class ServerCoinIterator {
@@ -38,5 +39,6 @@ export class Wallet {
   derivationIndex(): Promise<number>
   hasPuzzleHash(puzzleHash: Uint8Array): Promise<boolean>
   createServerCoin(launcherId: Uint8Array, amount: number, fee: number, uris: Array<string>): Promise<void>
+  createServerCoinWithOffset(launcherId: Uint8Array, amount: number, fee: number, uris: Array<string>, offset: number): Promise<void>
   deleteServerCoins(coins: Array<Coin>, fee: number): Promise<void>
 }

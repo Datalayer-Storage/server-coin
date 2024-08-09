@@ -15,6 +15,7 @@ use chia_wallet_sdk::{
 use clvm_utils::CurriedProgram;
 use clvmr::Allocator;
 use indexmap::IndexSet;
+use num_bigint::BigInt;
 
 use crate::server_coin::{morph_launcher_id, MirrorArgs, MirrorExt, MirrorSolution};
 
@@ -83,12 +84,13 @@ impl Wallet {
         amount: u64,
         fee: u64,
         uris: Vec<String>,
+        offset: &BigInt,
     ) -> anyhow::Result<()> {
         let coins = self.select(amount + fee)?;
         let change_puzzle_hash = self.sync_unused_puzzle_hash().await?;
 
         let mut memos = Vec::with_capacity(uris.len() + 1);
-        memos.push(morph_launcher_id(launcher_id).to_vec().into());
+        memos.push(morph_launcher_id(launcher_id, offset).to_vec().into());
 
         for url in uris {
             memos.push(url.as_bytes().into());
