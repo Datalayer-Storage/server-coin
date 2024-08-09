@@ -65,8 +65,17 @@ impl Peer {
 
     #[napi]
     pub async fn fetch_server_coins(&self, launcher_id: Uint8Array) -> Result<ServerCoinIterator> {
+        self.fetch_server_coins_with_offet(launcher_id, 1.0).await
+    }
+
+    #[napi]
+    pub async fn fetch_server_coins_with_offet(
+        &self,
+        launcher_id: Uint8Array,
+        offset: f64,
+    ) -> Result<ServerCoinIterator> {
         let launcher_id = bytes32(launcher_id)?;
-        let hint = morph_launcher_id(launcher_id);
+        let hint = morph_launcher_id(launcher_id, &(offset as u64).into());
 
         let mut response = self
             .0
@@ -277,12 +286,31 @@ impl Wallet {
         fee: f64,
         uris: Vec<String>,
     ) -> Result<()> {
+        self.create_server_coin_with_offset(launcher_id, amount, fee, uris, 1.0)
+            .await
+    }
+
+    #[napi]
+    pub async fn create_server_coin_with_offset(
+        &self,
+        launcher_id: Uint8Array,
+        amount: f64,
+        fee: f64,
+        uris: Vec<String>,
+        offset: f64,
+    ) -> Result<()> {
         let launcher_id = bytes32(launcher_id)?;
 
         self.0
             .lock()
             .await
-            .create_server_coin(launcher_id, amount as u64, fee as u64, uris)
+            .create_server_coin(
+                launcher_id,
+                amount as u64,
+                fee as u64,
+                uris,
+                &(offset as u64).into(),
+            )
             .await
             .map_err(js)
     }
