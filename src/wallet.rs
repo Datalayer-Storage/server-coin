@@ -69,6 +69,9 @@ impl Wallet {
 
     pub fn apply(&mut self, coin_states: Vec<CoinState>) {
         for coin_state in coin_states {
+            if !self.p2_puzzle_hashes.contains(&coin_state.coin.puzzle_hash) {
+                continue;
+            }
             if coin_state.spent_height.is_some() {
                 self.coins.remove(&coin_state.coin);
             } else {
